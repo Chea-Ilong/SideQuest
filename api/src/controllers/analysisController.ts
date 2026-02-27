@@ -24,6 +24,29 @@ export async function triggerAnalysis(req: Request, res: Response, next: NextFun
       throw new AppError('Analysis already running', 409, 'ALREADY_RUNNING');
     }
 
+    // Validate: must have at least one source with status 'done' or 'processing'
+    const { data: sources, error: sourcesError } = await supabase
+      .schema('app')
+      .from('sources')
+      .select('id, status')
+      .eq('scan_id', scanId);
+
+    if (sourcesError) {
+      throw new AppError('Failed to check sources', 500, 'DB_ERROR', sourcesError);
+    }
+
+    const activeSources = (sources ?? []).filter(
+      (s) => s.status === 'done' || s.status === 'processing' || s.status === 'pending'
+    );
+
+    if (activeSources.length === 0) {
+      throw new AppError(
+        'No sources added. Please add at least one source (GitHub, resume, or manual) before running analysis.',
+        400,
+        'NO_SOURCES'
+      );
+    }
+
     // Update to running
     await supabase
       .schema('app')
@@ -36,6 +59,7 @@ export async function triggerAnalysis(req: Request, res: Response, next: NextFun
       logger.error({ err, scanId }, 'Analysis pipeline failed');
     });
 
+    logger.info({ scanId, sourceCount: activeSources.length }, 'Analysis started');
     res.json({ message: 'Analysis started', scan_id: scanId });
   } catch (err) {
     next(err);

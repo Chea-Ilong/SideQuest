@@ -130,7 +130,7 @@ export async function processResumeUpload(
     // 1. Upload to Supabase Storage
     const storagePath = `${scanId}/${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const { error: uploadError } = await supabase.storage
-      .from('skillDNA')
+      .from('resumes')
       .upload(storagePath, file.buffer, {
         contentType: file.mimetype,
         upsert: false,
