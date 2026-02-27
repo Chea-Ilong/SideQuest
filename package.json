@@ -1,0 +1,25 @@
+{
+  "name": "skill-dna-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Skill DNA Scanner MVP - interactive skill genome from GitHub, resume, and manual input",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --prefix api",
+    "dev:web": "npm run dev --prefix web",
+    "build": "npm run build --prefix api && npm run build --prefix web",
+    "type-check": "npm run type-check --prefix api && npm run type-check --prefix web",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:migrate": "npx supabase migration up",
+    "db:status": "npx supabase status",
+    "tika:start": "docker compose up -d tika",
+    "tika:stop": "docker compose stop tika",
+    "import:esco": "npm run import:esco --prefix api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "supabase": "^2.76.15"
+  }
+}

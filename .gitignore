@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Supabase local secrets
+supabase/.temp/
+
+# Uploads (temp)
+api/uploads/
+
+# ESCO CSV data files (large binary, download separately)
+api/data/*.csv
+api/data/*.json
+!api/data/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Vite
+web/.vite/
+
+# TypeScript cache
+*.tsbuildinfo
