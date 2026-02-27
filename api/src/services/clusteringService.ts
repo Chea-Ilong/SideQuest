@@ -3,7 +3,7 @@ import { logger } from '../utils/logger.js';
 
 // Using ml-kmeans and ml-pca for pure JS clustering
 // @ts-ignore — these packages have limited type definitions
-import KMeans from 'ml-kmeans';
+import { kmeans as KMeans } from 'ml-kmeans';
 // @ts-ignore
 import { PCA } from 'ml-pca';
 

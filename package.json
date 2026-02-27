@@ -16,7 +16,8 @@
     "db:status": "npx supabase status",
     "tika:start": "docker compose up -d tika",
     "tika:stop": "docker compose stop tika",
-    "import:esco": "npm run import:esco --prefix api"
+    "import:esco": "npm run import:esco --prefix api",
+    "fetch:esco": "npm run fetch:esco --prefix api"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

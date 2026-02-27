@@ -28,16 +28,14 @@ export function ScanResults() {
   const navigate = useNavigate();
   const shareToken = searchParams.get('share_token') ?? '';
 
+  // Save token synchronously before any child renders fetch data
+  if (id && shareToken) {
+    saveShareToken(id, shareToken);
+  }
+
   const [activeTab, setActiveTab] = useState('map');
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  // Save token
-  useEffect(() => {
-    if (id && shareToken) {
-      saveShareToken(id, shareToken);
-    }
-  }, [id, shareToken]);
 
   const { scan, loading, error } = useScan(id ?? null);
 
