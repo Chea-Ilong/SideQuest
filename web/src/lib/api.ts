@@ -140,6 +140,12 @@ export const api = {
     evidence: (id: string) =>
       apiFetch<{ data: EvidenceItem[] }>(`/api/scans/${id}/views/evidence`, { scanId: id }),
 
+    skillEvidence: (id: string, escoUri: string) =>
+      apiFetch<{ data: SkillView | null }>(
+        `/api/scans/${id}/views/evidence/${encodeURIComponent(escoUri)}`,
+        { scanId: id }
+      ),
+
     map: (id: string) =>
       apiFetch<{ data: { nodes: GraphNode[]; edges: GraphEdge[] } }>(
         `/api/scans/${id}/views/map`,

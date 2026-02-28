@@ -6,21 +6,23 @@ interface CardProps {
   padding?: 'sm' | 'md' | 'lg' | 'none';
   onClick?: () => void;
   hoverable?: boolean;
-  variant?: 'default' | 'elevated' | 'bordered' | 'glass';
+  variant?: 'default' | 'elevated' | 'bordered' | 'glass' | 'bright' | 'dark';
 }
 
 const paddingClasses = {
   none: '',
   sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
+  md: 'p-5',
+  lg: 'p-6',
 };
 
 const variantClasses = {
-  default: 'bg-white border border-slate-200 shadow-sm',
-  elevated: 'bg-white border border-slate-100 shadow-md',
-  bordered: 'bg-white border-2 border-slate-200',
-  glass: 'glass-card shadow-sm',
+  default: 'bg-[#12122a] border-2 border-[#4a3f8f] shadow-[4px_4px_0_#000000]',
+  elevated: 'bg-[#12122a] border-2 border-[#7b6fcf] shadow-[4px_4px_0_#000000]',
+  bordered: 'bg-[#0a0a1a] border-2 border-[#333355] shadow-[4px_4px_0_#000000]',
+  glass: 'bg-[#0a0a1a] border-2 border-[#4a3f8f] shadow-[4px_4px_0_#000000]',
+  bright: 'bg-[#0a1a2a] border-2 border-[#00d4ff] shadow-[4px_4px_0_#000000,0_0_12px_rgba(0,212,255,0.2)]',
+  dark: 'bg-[#050510] border-2 border-[#222244] shadow-[4px_4px_0_#000000]',
 };
 
 export function Card({ children, className = '', padding = 'md', onClick, hoverable, variant = 'default' }: CardProps) {
@@ -28,10 +30,9 @@ export function Card({ children, className = '', padding = 'md', onClick, hovera
     <div
       onClick={onClick}
       className={`
-        rounded-2xl
         ${variantClasses[variant]}
         ${paddingClasses[padding]}
-        ${hoverable ? 'cursor-pointer hover:shadow-lg hover:border-indigo-200 hover:-translate-y-0.5 transition-all duration-200' : ''}
+        ${hoverable ? 'cursor-pointer hover:border-[#00d4ff] hover:shadow-[4px_4px_0_#000000,0_0_8px_rgba(0,212,255,0.2)] transition-all duration-75' : ''}
         ${className}
       `}
     >

@@ -1,19 +1,23 @@
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  color?: string;
 }
 
-const sizeClasses = { sm: 'h-4 w-4', md: 'h-8 w-8', lg: 'h-12 w-12' };
+const sizeClasses = {
+  sm: 'w-4 h-4 border-2',
+  md: 'w-8 h-8 border-2',
+  lg: 'w-12 h-12 border-4',
+};
 
-export function Spinner({ size = 'md', className = '' }: SpinnerProps) {
+export function Spinner({ size = 'md', className = '', color = '#00d4ff' }: SpinnerProps) {
   return (
-    <svg
-      className={`animate-spin text-indigo-600 ${sizeClasses[size]} ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
+    <div
+      className={`pixel-spin flex-shrink-0 ${sizeClasses[size]} ${className}`}
+      style={{
+        borderColor: `${color} transparent transparent transparent`,
+        borderStyle: 'solid',
+      }}
+    />
   );
 }

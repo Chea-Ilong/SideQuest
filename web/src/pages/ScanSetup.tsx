@@ -6,7 +6,6 @@ import { ResumeUpload } from '../components/scan/ResumeUpload.js';
 import { ManualInput } from '../components/scan/ManualInput.js';
 import { Tabs } from '../components/common/Tabs.js';
 import { Button } from '../components/common/Button.js';
-import { Card } from '../components/common/Card.js';
 import { PageContainer } from '../components/layout/PageContainer.js';
 
 type SourceStatus = 'pending' | 'adding' | 'done' | 'error';
@@ -36,7 +35,6 @@ export function ScanSetup() {
 
   async function ensureScanExists(): Promise<{ id: string; token: string }> {
     if (scanId && shareToken) return { id: scanId, token: shareToken };
-
     setCreating(true);
     try {
       const result = await api.scans.create();
@@ -122,53 +120,47 @@ export function ScanSetup() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen pixel-grid-bg">
       <PageContainer maxWidth="2xl">
-        <div className="space-y-8">
+        <div className="space-y-6 py-4">
           {/* Page header */}
-          <div className="text-center pt-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-200 rounded-full text-xs text-indigo-700 font-medium mb-4">
-              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+          <div className="text-center py-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#0a1a2a] border-2 border-[#00d4ff] shadow-[2px_2px_0_#000000] text-xs font-[Silkscreen,monospace] uppercase tracking-wider text-[#00d4ff] mb-4">
+              <span className="w-2 h-2 bg-[#00d4ff]" />
               New Analysis
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Build Your Skill DNA</h1>
-            <p className="text-slate-500 max-w-md mx-auto">
-              Add one or more sources, then run the analysis to generate your personalized Skill DNA profile.
+            <h1 className="font-[Press_Start_2P,monospace] text-xl text-[#f0f0f0] mb-2" style={{ textShadow: '2px 2px 0 #000000' }}>
+              BUILD YOUR SKILL DNA
+            </h1>
+            <p className="font-[Silkscreen,monospace] text-xs text-[#555577] max-w-md mx-auto">
+              Add one or more sources, then run the analysis to generate your Skill DNA profile.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {/* Input form */}
             <div className="md:col-span-2">
-              <Card padding="none" className="overflow-hidden shadow-md">
-                <div className="px-6 pt-5 border-b border-slate-100">
-                  <Tabs
-                    tabs={tabs}
-                    activeTab={activeTab}
-                    onChange={setActiveTab}
-                  />
+              <div className="bg-[#12122a] border-2 border-[#4a3f8f] shadow-[4px_4px_0_#000000] overflow-hidden">
+                <div className="px-5 pt-4 border-b-2 border-[#333355]">
+                  <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
                 </div>
-                <div className="p-6">
-                  {activeTab === 'github' && (
-                    <GitHubInput onSubmit={handleGitHub} loading={isLoading} />
-                  )}
-                  {activeTab === 'resume' && (
-                    <ResumeUpload onUpload={handleResume} loading={isLoading} />
-                  )}
-                  {activeTab === 'manual' && (
-                    <ManualInput onSubmit={handleManual} loading={isLoading} />
-                  )}
+                <div className="p-5">
+                  {activeTab === 'github' && <GitHubInput onSubmit={handleGitHub} loading={isLoading} />}
+                  {activeTab === 'resume' && <ResumeUpload onUpload={handleResume} loading={isLoading} />}
+                  {activeTab === 'manual' && <ManualInput onSubmit={handleManual} loading={isLoading} />}
                 </div>
-              </Card>
+              </div>
             </div>
 
             {/* Status panel */}
             <div className="space-y-4">
-              <Card padding="md" className="shadow-sm">
+              <div className="bg-[#12122a] border-2 border-[#4a3f8f] shadow-[4px_4px_0_#000000] p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-slate-900">Sources Added</h3>
+                  <h3 className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#888888]">
+                    Sources Added
+                  </h3>
                   {addedSources.length > 0 && (
-                    <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                    <span className="font-[Silkscreen,monospace] text-xs text-[#00ff88] border border-[#00aa55] px-2 py-0.5">
                       {addedSources.filter(s => s.status === 'done').length} ready
                     </span>
                   )}
@@ -177,43 +169,35 @@ export function ScanSetup() {
                 {addedSources.length === 0 ? (
                   <div className="text-center py-6">
                     <div className="text-3xl mb-2">📋</div>
-                    <p className="text-sm text-slate-400">No sources added yet</p>
-                    <p className="text-xs text-slate-300 mt-1">Add at least one source to begin</p>
+                    <p className="font-[Silkscreen,monospace] text-xs text-[#333355]">No sources added yet</p>
+                    <p className="font-[Silkscreen,monospace] text-xs text-[#222244] mt-1">Add at least one to begin</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {addedSources.map((s, i) => (
-                      <div key={i} className={`flex items-start gap-3 p-3 rounded-xl text-sm transition-colors ${
-                        s.status === 'done' ? 'bg-emerald-50 border border-emerald-100' :
-                        s.status === 'error' ? 'bg-red-50 border border-red-100' :
-                        'bg-slate-50 border border-slate-100'
+                      <div key={i} className={`flex items-start gap-2 p-2 border text-xs ${
+                        s.status === 'done' ? 'bg-[#003322] border-[#00aa55]' :
+                        s.status === 'error' ? 'bg-[#330011] border-[#aa0022]' :
+                        'bg-[#0a0a1a] border-[#333355]'
                       }`}>
-                        <span className="text-base flex-shrink-0 mt-0.5">
-                          {SOURCE_ICONS[s.type] ?? '📌'}
-                        </span>
+                        <span className="flex-shrink-0 mt-0.5">{SOURCE_ICONS[s.type] ?? '📌'}</span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-slate-700 font-medium truncate">{s.label}</p>
+                          <p className="font-[Silkscreen,monospace] text-[#c8c8c8] truncate">{s.label}</p>
                           {s.status === 'adding' && (
-                            <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                              <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                              </svg>
-                              Adding...
-                            </p>
+                            <p className="font-[Silkscreen,monospace] text-[#555577] text-xs mt-0.5">Loading...</p>
                           )}
-                          {s.status === 'done' && <p className="text-xs text-emerald-600 mt-0.5">✓ Added successfully</p>}
-                          {s.error && <p className="text-xs text-red-500 mt-0.5">{s.error}</p>}
+                          {s.status === 'done' && <p className="font-[Silkscreen,monospace] text-[#00ff88] text-xs mt-0.5">✓ Added</p>}
+                          {s.error && <p className="font-[Silkscreen,monospace] text-[#ff2244] text-xs mt-0.5">{s.error}</p>}
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </Card>
+              </div>
 
               {createError && (
-                <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3">
-                  <span className="flex-shrink-0">⚠️</span>
+                <div className="flex items-start gap-2 font-[Silkscreen,monospace] text-xs text-[#ff2244] bg-[#330011] border-2 border-[#aa0022] shadow-[2px_2px_0_#000000] p-3">
+                  <span>▶</span>
                   <p>{createError}</p>
                 </div>
               )}
@@ -224,29 +208,28 @@ export function ScanSetup() {
                 disabled={!hasAnyDoneSource || isLoading}
                 size="lg"
                 variant="gradient"
-                className="w-full shadow-md shadow-indigo-200"
+                className="w-full"
               >
-                {running ? 'Starting Analysis...' : 'Run Analysis →'}
+                {running ? 'Starting...' : '▶ Run Analysis'}
               </Button>
 
-              <div className="text-center space-y-1">
-                <p className="text-xs text-slate-400">
-                  ⏱ Analysis takes 30–120 seconds
-                </p>
-                <p className="text-xs text-slate-300">
-                  depending on the number of sources
+              <div className="text-center">
+                <p className="font-[Silkscreen,monospace] text-xs text-[#333355]">
+                  ⏱ 30–120 seconds depending on sources
                 </p>
               </div>
 
               {/* Tips */}
-              <Card padding="sm" className="bg-indigo-50 border-indigo-100">
-                <p className="text-xs font-semibold text-indigo-800 mb-2">💡 Tips for best results</p>
-                <ul className="text-xs text-indigo-700 space-y-1">
-                  <li>• Add GitHub + Resume for comprehensive analysis</li>
-                  <li>• Use a GitHub PAT for more repos analyzed</li>
-                  <li>• Manual input fills gaps not in other sources</li>
+              <div className="bg-[#0a1a2a] border-2 border-[#0088aa] shadow-[2px_2px_0_#000000] p-3">
+                <p className="font-[Silkscreen,monospace] text-xs text-[#00d4ff] mb-2 uppercase tracking-wider">
+                  💡 Tips
+                </p>
+                <ul className="font-[Silkscreen,monospace] text-xs text-[#555577] space-y-1">
+                  <li>▸ GitHub + Resume = best results</li>
+                  <li>▸ Use PAT for more repos</li>
+                  <li>▸ Manual fills gaps</li>
                 </ul>
-              </Card>
+              </div>
             </div>
           </div>
         </div>

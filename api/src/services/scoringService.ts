@@ -29,41 +29,60 @@ function saturatingScore(weights: number[]): number {
 export async function computeSkillScores(scanId: string): Promise<number> {
   logger.info({ scanId }, 'Computing skill scores');
 
-  // Fetch all primary normalizations for this scan, joining through mentions → evidence
-  const { data: normalizations, error } = await supabase
+  // Step 1: Get all evidence items for this scan
+  const { data: evidenceItems, error: evError } = await supabase
     .schema('app')
-    .from('skill_normalizations')
-    .select(`
-      esco_uri,
-      score,
-      mention_id,
-      skill_mentions!inner(
-        evidence_id,
-        evidence_items!inner(
-          scan_id,
-          evidence_type,
-          strength,
-          timestamp
-        )
-      )
-    `)
-    .eq('skill_mentions.evidence_items.scan_id', scanId)
-    .eq('is_primary', true);
+    .from('evidence_items')
+    .select('id, evidence_type, strength, timestamp')
+    .eq('scan_id', scanId);
 
-  if (error || !normalizations) {
-    logger.error({ error, scanId }, 'Failed to fetch normalizations');
+  if (evError || !evidenceItems || evidenceItems.length === 0) {
+    logger.warn({ evError, scanId }, 'No evidence items found for scan');
     return 0;
   }
 
-  // Group by esco_uri
+  const evidenceIds = evidenceItems.map((e) => e.id);
+  const evidenceMap = new Map(evidenceItems.map((e) => [e.id, e]));
+
+  // Step 2: Get all skill mentions for those evidence items
+  const { data: mentions, error: mentionError } = await supabase
+    .schema('app')
+    .from('skill_mentions')
+    .select('id, evidence_id')
+    .in('evidence_id', evidenceIds);
+
+  if (mentionError || !mentions || mentions.length === 0) {
+    logger.warn({ mentionError, scanId }, 'No skill mentions found for scan');
+    return 0;
+  }
+
+  const mentionIds = mentions.map((m) => m.id);
+  const mentionToEvidence = new Map(mentions.map((m) => [m.id, m.evidence_id]));
+
+  // Step 3: Get all primary normalizations for those mentions
+  const { data: normalizations, error: normError } = await supabase
+    .schema('app')
+    .from('skill_normalizations')
+    .select('esco_uri, score, mention_id')
+    .in('mention_id', mentionIds)
+    .eq('is_primary', true);
+
+  if (normError || !normalizations) {
+    logger.error({ normError, scanId }, 'Failed to fetch normalizations');
+    return 0;
+  }
+
+  // Step 4: Group by esco_uri and compute scores
   const skillMap = new Map<
     string,
     Array<{ weight: number; evidenceId: string; timestamp: string | null }>
   >();
 
   for (const norm of normalizations) {
-    const mention = (norm as any).skill_mentions;
-    const evidence = mention?.evidence_items;
+    const evidenceId = mentionToEvidence.get(norm.mention_id);
+    if (!evidenceId) continue;
+
+    const evidence = evidenceMap.get(evidenceId);
     if (!evidence) continue;
 
     const reliability = SOURCE_RELIABILITY[evidence.evidence_type] ?? 0.4;
@@ -75,12 +94,12 @@ export async function computeSkillScores(scanId: string): Promise<number> {
     }
     skillMap.get(norm.esco_uri)!.push({
       weight,
-      evidenceId: mention.evidence_id,
+      evidenceId,
       timestamp: evidence.timestamp,
     });
   }
 
-  // Compute scores and upsert
+  // Step 5: Compute scores and upsert
   const scores = [];
   for (const [esco_uri, items] of skillMap.entries()) {
     items.sort((a, b) => b.weight - a.weight);

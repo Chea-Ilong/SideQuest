@@ -42,6 +42,7 @@ export function ProgressTracker({ status, progress, error }: ProgressTrackerProp
   const phaseIcon = PHASE_ICONS[phase] ?? '⚙️';
   const errors = progress.errors ?? [];
   const stepsCompleted = progress.steps_completed ?? [];
+  const subMessage = progress.message;
 
   const isDone = status === 'ready';
   const isError = status === 'error';
@@ -50,42 +51,42 @@ export function ProgressTracker({ status, progress, error }: ProgressTrackerProp
   const displayPercent = isDone ? 100 : percent;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Current phase */}
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ${
-          isDone ? 'bg-emerald-100' :
-          isError ? 'bg-red-100' :
-          'bg-indigo-100'
+        <div className={`w-12 h-12 border-2 flex items-center justify-center text-2xl flex-shrink-0 ${
+          isDone ? 'bg-[#003322] border-[#00ff88]' :
+          isError ? 'bg-[#330011] border-[#ff2244]' :
+          'bg-[#0a1a2a] border-[#4a3f8f]'
         }`}>
           {isRunning ? (
-            <div className="relative">
-              <span className="text-xl">{phaseIcon}</span>
-            </div>
+            <Spinner size="sm" color="#00d4ff" />
           ) : (
             <span>{phaseIcon}</span>
           )}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            {isRunning && <Spinner size="sm" />}
-            <span className={`font-semibold ${isError ? 'text-red-700' : isDone ? 'text-emerald-700' : 'text-slate-800'}`}>
+            <span className={`font-[Silkscreen,monospace] text-sm uppercase tracking-wider ${
+              isError ? 'text-[#ff2244]' : isDone ? 'text-[#00ff88]' : 'text-[#c8c8c8]'
+            }`}>
               {phaseLabel}
             </span>
           </div>
+          {subMessage && isRunning && (
+            <p className="font-[Silkscreen,monospace] text-xs text-[#555577] mb-1">{subMessage}</p>
+          )}
+
+          {/* Pixel progress bar */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
+            <div className="flex-1 pixel-progress-track">
               <div
-                className={`h-2.5 rounded-full transition-all duration-700 ease-out ${
-                  isError ? 'bg-red-500' :
-                  isDone ? 'bg-emerald-500' :
-                  'bg-gradient-to-r from-indigo-500 to-violet-500 progress-animated'
-                }`}
+                className={`pixel-progress-fill ${isDone ? 'pixel-progress-fill-green' : isError ? 'pixel-progress-fill-red' : ''}`}
                 style={{ width: `${displayPercent}%` }}
               />
             </div>
-            <span className={`text-sm font-semibold w-10 text-right flex-shrink-0 ${
-              isError ? 'text-red-600' : isDone ? 'text-emerald-600' : 'text-indigo-600'
+            <span className={`font-[Press_Start_2P,monospace] text-xs w-10 text-right flex-shrink-0 ${
+              isError ? 'text-[#ff2244]' : isDone ? 'text-[#00ff88]' : 'text-[#00d4ff]'
             }`}>
               {displayPercent}%
             </span>
@@ -96,17 +97,16 @@ export function ProgressTracker({ status, progress, error }: ProgressTrackerProp
       {/* Completed steps */}
       {stepsCompleted.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Completed Steps</p>
+          <p className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#555577] mb-2">
+            Completed Steps
+          </p>
           <div className="flex flex-wrap gap-2">
             {stepsCompleted.map((step) => (
               <span
                 key={step}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-full"
+                className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#003322] border border-[#00aa55] font-[Silkscreen,monospace] text-xs text-[#00ff88] shadow-[1px_1px_0_#000000]"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {step.replace(/:.*/, '').replace(/_/g, ' ')}
+                ✓ {step.replace(/:.*/, '').replace(/_/g, ' ')}
               </span>
             ))}
           </div>
@@ -116,10 +116,10 @@ export function ProgressTracker({ status, progress, error }: ProgressTrackerProp
       {/* Warnings */}
       {errors.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Warnings</p>
+          <p className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#555577]">Warnings</p>
           {errors.map((err, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-              <span className="flex-shrink-0 mt-0.5">⚠️</span>
+            <div key={i} className="flex items-start gap-2 font-[Silkscreen,monospace] text-xs text-[#ffd700] bg-[#332200] border border-[#aa7700] p-2">
+              <span className="flex-shrink-0">⚠</span>
               <span>{err}</span>
             </div>
           ))}
@@ -127,8 +127,8 @@ export function ProgressTracker({ status, progress, error }: ProgressTrackerProp
       )}
 
       {error && (
-        <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-4">
-          <span className="flex-shrink-0 mt-0.5">❌</span>
+        <div className="flex items-start gap-2 font-[Silkscreen,monospace] text-xs text-[#ff2244] bg-[#330011] border-2 border-[#aa0022] p-3">
+          <span className="flex-shrink-0">✗</span>
           <span>{error}</span>
         </div>
       )}
