@@ -9,16 +9,10 @@ interface LearningRoadmapProps {
   onSkillClick: (escoUri: string) => void;
 }
 
-const PRIORITY_CONFIG = {
-  high: { label: 'High Priority', variant: 'error' as const, bg: 'bg-red-50', border: 'border-red-100', dot: 'bg-red-500' },
-  medium: { label: 'Medium Priority', variant: 'warning' as const, bg: 'bg-amber-50', border: 'border-amber-100', dot: 'bg-amber-500' },
-  low: { label: 'Low Priority', variant: 'default' as const, bg: 'bg-slate-50', border: 'border-slate-100', dot: 'bg-slate-400' },
-};
-
 function getPriorityConfig(priority: number) {
-  if (priority <= 3) return PRIORITY_CONFIG.high;
-  if (priority <= 6) return PRIORITY_CONFIG.medium;
-  return PRIORITY_CONFIG.low;
+  if (priority <= 3) return { variant: 'error' as const, color: '#ff2244', bg: '#330011', border: '#aa0022', label: 'HIGH' };
+  if (priority <= 6) return { variant: 'warning' as const, color: '#ffd700', bg: '#332200', border: '#aa7700', label: 'MED' };
+  return { variant: 'default' as const, color: '#888888', bg: '#1a1a2e', border: '#333355', label: 'LOW' };
 }
 
 export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) {
@@ -37,8 +31,8 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <Spinner size="lg" />
-        <p className="text-sm text-slate-400">Generating your roadmap...</p>
+        <Spinner size="lg" color="#ffd700" />
+        <p className="font-[Silkscreen,monospace] text-xs text-[#555577] uppercase tracking-wider">Generating roadmap...</p>
       </div>
     );
   }
@@ -46,7 +40,7 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 text-sm">{error}</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#ff2244]">▶ {error}</p>
       </div>
     );
   }
@@ -55,8 +49,9 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
     return (
       <div className="text-center py-16 space-y-3">
         <div className="text-4xl">🗺️</div>
-        <p className="text-slate-700 font-semibold">No roadmap generated yet.</p>
-        <p className="text-sm text-slate-400">Run a gap analysis first by selecting a target role in the Gaps tab.</p>
+        <p className="font-[Silkscreen,monospace] text-sm text-[#888888] uppercase tracking-wider">No roadmap yet</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#555577]">Run gap analysis first by selecting a target role.</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#333355]">Make sure ESCO data is imported.</p>
       </div>
     );
   }
@@ -68,21 +63,21 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
     <div className="space-y-5">
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-indigo-700">{items.length}</div>
-          <div className="text-xs text-indigo-500 font-medium mt-0.5">Skills to Learn</div>
+        <div className="bg-[#0a1a2a] border-2 border-[#0088aa] shadow-[2px_2px_0_#000000] p-3 text-center">
+          <div className="font-[Press_Start_2P,monospace] text-xl text-[#00d4ff]">{items.length}</div>
+          <div className="font-[Silkscreen,monospace] text-xs text-[#0088aa] uppercase tracking-wider mt-1">Quests</div>
         </div>
-        <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-amber-700">~{totalHours}h</div>
-          <div className="text-xs text-amber-500 font-medium mt-0.5">Estimated Time</div>
+        <div className="bg-[#332200] border-2 border-[#aa7700] shadow-[2px_2px_0_#000000] p-3 text-center">
+          <div className="font-[Press_Start_2P,monospace] text-xl text-[#ffd700]">~{totalHours}h</div>
+          <div className="font-[Silkscreen,monospace] text-xs text-[#aa7700] uppercase tracking-wider mt-1">Est. Time</div>
         </div>
-        <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-center">
-          <div className="text-2xl font-bold text-red-700">{highPriorityCount}</div>
-          <div className="text-xs text-red-500 font-medium mt-0.5">High Priority</div>
+        <div className="bg-[#330011] border-2 border-[#aa0022] shadow-[2px_2px_0_#000000] p-3 text-center">
+          <div className="font-[Press_Start_2P,monospace] text-xl text-[#ff2244]">{highPriorityCount}</div>
+          <div className="font-[Silkscreen,monospace] text-xs text-[#aa0022] uppercase tracking-wider mt-1">Urgent</div>
         </div>
       </div>
 
-      {/* Roadmap items */}
+      {/* Quest log */}
       <div className="space-y-3">
         {items.map((item) => {
           const isExpanded = expanded === item.id;
@@ -91,18 +86,16 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
           return (
             <div
               key={item.id}
-              className={`border rounded-2xl overflow-hidden transition-all duration-200 ${
-                isExpanded ? `${config.border} shadow-md` : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
-              }`}
+              className="border-2 shadow-[2px_2px_0_#000000] overflow-hidden transition-all duration-75"
+              style={{ borderColor: isExpanded ? config.color : '#333355', backgroundColor: isExpanded ? config.bg : '#12122a' }}
             >
-              <div className={`p-4 ${isExpanded ? config.bg : 'bg-white'}`}>
-                <div className="flex items-start gap-4">
-                  {/* Priority number */}
-                  <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold ${
-                    item.priority <= 3 ? 'bg-red-100 text-red-700' :
-                    item.priority <= 6 ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
+              <div className="p-4">
+                <div className="flex items-start gap-3">
+                  {/* Priority badge */}
+                  <div
+                    className="flex-shrink-0 w-8 h-8 border-2 flex items-center justify-center font-[Press_Start_2P,monospace] text-xs"
+                    style={{ backgroundColor: config.bg, borderColor: config.color, color: config.color }}
+                  >
                     {item.priority}
                   </div>
 
@@ -110,22 +103,23 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
                     <div className="flex items-start justify-between gap-2">
                       <button
                         onClick={() => onSkillClick(item.esco_uri)}
-                        className="font-semibold text-slate-900 hover:text-indigo-600 text-left transition-colors leading-tight"
+                        className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-left transition-colors duration-75 hover:text-[#00d4ff]"
+                        style={{ color: isExpanded ? config.color : '#c8c8c8' }}
                       >
                         {item.title}
                       </button>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {item.estimated_hours && (
-                          <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full font-medium">
+                          <span className="font-[Silkscreen,monospace] text-xs text-[#555577] bg-[#0a0a1a] border border-[#333355] px-1.5 py-0.5">
                             ~{item.estimated_hours}h
                           </span>
                         )}
-                        <Badge variant={config.variant} dot size="md">P{item.priority}</Badge>
+                        <Badge variant={config.variant} size="md">P{item.priority}</Badge>
                       </div>
                     </div>
 
                     {item.description && (
-                      <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
+                      <p className="font-[Silkscreen,monospace] text-xs text-[#555577] mt-1.5 leading-relaxed">
                         {isExpanded ? item.description : `${item.description.slice(0, 120)}${item.description.length > 120 ? '...' : ''}`}
                       </p>
                     )}
@@ -134,23 +128,20 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
 
                 {/* Resources (expanded) */}
                 {isExpanded && item.resources.length > 0 && (
-                  <div className="mt-4 ml-13 pl-4 border-l-2 border-indigo-200 space-y-2">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Learning Resources</p>
+                  <div className="mt-4 ml-11 border-l-2 border-[#333355] pl-3 space-y-2">
+                    <p className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#555577]">Resources</p>
                     {item.resources.map((r, i) => (
                       <a
                         key={i}
                         href={r.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2.5 text-sm text-indigo-600 hover:text-indigo-700 group"
+                        className="flex items-center gap-2 font-[Silkscreen,monospace] text-xs text-[#00d4ff] hover:text-[#ffffff] transition-colors duration-75"
                       >
-                        <span className="text-base flex-shrink-0">
+                        <span className="flex-shrink-0">
                           {r.type === 'video' ? '📹' : r.type === 'docs' ? '📚' : '🔍'}
                         </span>
-                        <span className="group-hover:underline">{r.title}</span>
-                        <svg className="w-3 h-3 text-indigo-400 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
+                        <span className="hover:underline">{r.title}</span>
                       </a>
                     ))}
                   </div>
@@ -159,15 +150,10 @@ export function LearningRoadmap({ scanId, onSkillClick }: LearningRoadmapProps) 
                 {/* Expand toggle */}
                 <button
                   onClick={() => setExpanded(isExpanded ? null : item.id)}
-                  className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-medium mt-3 ml-13 transition-colors"
+                  className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider mt-3 ml-11 transition-colors duration-75"
+                  style={{ color: config.color }}
                 >
-                  <svg
-                    className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                  {isExpanded ? 'Show less' : `Show resources${item.resources.length > 0 ? ` (${item.resources.length})` : ''}`}
+                  {isExpanded ? '▲ Collapse' : `▼ Resources${item.resources.length > 0 ? ` (${item.resources.length})` : ''}`}
                 </button>
               </div>
             </div>

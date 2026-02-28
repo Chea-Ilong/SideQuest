@@ -13,7 +13,7 @@ interface EvidenceDrawerProps {
 
 const EVIDENCE_TYPE_LABELS: Record<string, string> = {
   repo_language: 'Language',
-  repo_topic: 'GitHub Topic',
+  repo_topic: 'Topic',
   dependency: 'Dependency',
   readme_snippet: 'README',
   resume_bullet: 'Resume',
@@ -38,34 +38,6 @@ const EVIDENCE_TYPE_COLORS: Record<string, 'info' | 'success' | 'warning' | 'def
   manual_claim: 'default',
 };
 
-function ScoreRing({ score }: { score: number }) {
-  const pct = Math.round(score * 100);
-  const radius = 28;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (pct / 100) * circumference;
-
-  const color = pct >= 70 ? '#10b981' : pct >= 40 ? '#6366f1' : '#f59e0b';
-
-  return (
-    <div className="relative w-20 h-20 flex items-center justify-center">
-      <svg className="absolute inset-0 -rotate-90" width="80" height="80">
-        <circle cx="40" cy="40" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="6" />
-        <circle
-          cx="40" cy="40" r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
-        />
-      </svg>
-      <span className="text-lg font-bold text-slate-800">{pct}%</span>
-    </div>
-  );
-}
-
 export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps) {
   const [skill, setSkill] = useState<SkillView | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,50 +47,48 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
     setLoading(true);
     setSkill(null);
 
-    api.views.skills(scanId)
-      .then((r) => {
-        const found = r.data.find((s) => s.esco_uri === escoUri) ?? null;
-        setSkill(found);
-      })
+    api.views.skillEvidence(scanId, escoUri)
+      .then((r) => setSkill(r.data))
       .catch(() => setSkill(null))
       .finally(() => setLoading(false));
   }, [scanId, escoUri]);
 
   if (!escoUri) return null;
 
+  const scorePercent = skill ? Math.round(skill.score * 100) : 0;
+  const scoreColor = scorePercent >= 70 ? '#00ff88' : scorePercent >= 40 ? '#00d4ff' : '#ffd700';
+
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/70 z-40"
         onClick={onClose}
       />
 
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0a0a1a] border-l-2 border-[#4a3f8f] shadow-[-4px_0_0_#000000] z-50 flex flex-col pixel-slide-right">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-violet-50">
+        <div className="flex items-start justify-between p-4 border-b-2 border-[#333355] bg-[#12122a]">
           <div className="flex-1 min-w-0 pr-3">
-            <h3 className="font-bold text-slate-900 text-lg leading-tight">
+            <h3 className="font-[Silkscreen,monospace] text-sm uppercase tracking-wider text-[#00d4ff] leading-tight">
               {skill?.preferred_label ?? (loading ? '...' : 'Skill Details')}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 font-mono truncate">{escoUri}</p>
+            <p className="font-[Silkscreen,monospace] text-xs text-[#333355] mt-1 truncate">{escoUri}</p>
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-white/80 rounded-xl transition-colors text-slate-500 hover:text-slate-700"
+            className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[#1a1a2e] border-2 border-[#333355] hover:border-[#ff2244] hover:text-[#ff2244] text-[#555577] transition-all duration-75 font-[Silkscreen,monospace] text-xs"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ✕
           </button>
         </div>
 
         {loading && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-3">
-              <Spinner size="lg" />
-              <p className="text-sm text-slate-400">Loading skill details...</p>
+              <Spinner size="lg" color="#00d4ff" />
+              <p className="font-[Silkscreen,monospace] text-xs text-[#555577] uppercase tracking-wider">Loading...</p>
             </div>
           </div>
         )}
@@ -126,18 +96,39 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
         {!loading && skill && (
           <div className="flex-1 overflow-y-auto">
             {/* Score summary */}
-            <div className="p-5 border-b border-slate-100">
-              <div className="flex items-center gap-5">
-                <ScoreRing score={skill.score} />
+            <div className="p-4 border-b-2 border-[#333355]">
+              <div className="flex items-center gap-4">
+                {/* XP-style score display */}
+                <div className="flex-shrink-0 text-center">
+                  <div
+                    className="font-[Press_Start_2P,monospace] text-2xl"
+                    style={{ color: scoreColor, textShadow: `0 0 12px ${scoreColor}` }}
+                  >
+                    {scorePercent}%
+                  </div>
+                  <div className="font-[Silkscreen,monospace] text-xs text-[#555577] uppercase tracking-wider mt-1">
+                    Skill XP
+                  </div>
+                </div>
                 <div className="flex-1 space-y-2">
-                  <p className="text-sm font-semibold text-slate-700">Skill Strength</p>
+                  {/* XP bar */}
+                  <div className="pixel-progress-track">
+                    <div
+                      className="pixel-progress-fill"
+                      style={{
+                        width: `${scorePercent}%`,
+                        background: `repeating-linear-gradient(90deg, ${scoreColor}88 0px, ${scoreColor}88 8px, ${scoreColor} 8px, ${scoreColor} 16px)`,
+                        boxShadow: `0 0 8px ${scoreColor}88`,
+                      }}
+                    />
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
                     <Badge variant="info" size="md">
-                      {skill.evidence_count} evidence item{skill.evidence_count !== 1 ? 's' : ''}
+                      {skill.evidence_count} evidence
                     </Badge>
                     <Badge variant="default" size="md">{skill.normalization_method}</Badge>
                     <Badge variant="success" size="md">
-                      {Math.round(skill.normalization_confidence * 100)}% confidence
+                      {Math.round(skill.normalization_confidence * 100)}% conf
                     </Badge>
                   </div>
                 </div>
@@ -145,17 +136,17 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
             </div>
 
             {/* Evidence items */}
-            <div className="p-5 space-y-4">
+            <div className="p-4 space-y-4">
               {skill.evidence.length > 0 ? (
                 <>
-                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <p className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#555577]">
                     Evidence ({skill.evidence.length})
-                  </h4>
+                  </p>
                   <div className="space-y-3">
                     {skill.evidence.map((ev) => (
                       <div
                         key={ev.id}
-                        className="border border-slate-200 rounded-xl p-4 space-y-3 hover:border-indigo-200 hover:bg-indigo-50/30 transition-colors"
+                        className="border-2 border-[#333355] bg-[#12122a] p-3 space-y-2 hover:border-[#4a3f8f] transition-all duration-75"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
@@ -165,38 +156,40 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
                             </Badge>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-16 h-2 bg-[#0a0a1a] border border-[#333355]">
                               <div
-                                className="h-1.5 rounded-full bg-indigo-400"
+                                className="h-full bg-[#4a3f8f]"
                                 style={{ width: `${Math.round(ev.strength * 100)}%` }}
                               />
                             </div>
-                            <span className="text-xs text-slate-500 font-medium w-8 text-right">
+                            <span className="font-[Silkscreen,monospace] text-xs text-[#555577] w-8 text-right">
                               {Math.round(ev.strength * 100)}%
                             </span>
                           </div>
                         </div>
 
                         {ev.text_snippet && (
-                          <blockquote className="text-sm text-slate-600 bg-slate-50 rounded-lg p-3 border-l-2 border-indigo-300 italic leading-relaxed">
-                            "{ev.text_snippet.slice(0, 200)}{ev.text_snippet.length > 200 ? '...' : ''}"
-                          </blockquote>
+                          <div className="bg-[#0a0a1a] border-l-2 border-[#4a3f8f] p-2">
+                            <p className="font-[Silkscreen,monospace] text-xs text-[#888888] leading-relaxed">
+                              "{ev.text_snippet.slice(0, 200)}{ev.text_snippet.length > 200 ? '...' : ''}"
+                            </p>
+                          </div>
                         )}
 
                         {ev.ref && (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {(ev.ref as any).repo && (
-                              <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                              <span className="font-[Silkscreen,monospace] text-xs text-[#555577] bg-[#0a0a1a] border border-[#333355] px-1.5 py-0.5">
                                 📦 {(ev.ref as any).repo}
                               </span>
                             )}
                             {(ev.ref as any).section && (
-                              <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                              <span className="font-[Silkscreen,monospace] text-xs text-[#555577] bg-[#0a0a1a] border border-[#333355] px-1.5 py-0.5">
                                 📄 {(ev.ref as any).section}
                               </span>
                             )}
                             {(ev.ref as any).project && (
-                              <span className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                              <span className="font-[Silkscreen,monospace] text-xs text-[#555577] bg-[#0a0a1a] border border-[#333355] px-1.5 py-0.5">
                                 🔧 {(ev.ref as any).project}
                               </span>
                             )}
@@ -209,7 +202,9 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
               ) : (
                 <div className="text-center py-8 space-y-2">
                   <div className="text-3xl">🔍</div>
-                  <p className="text-sm text-slate-500">No detailed evidence available for this skill.</p>
+                  <p className="font-[Silkscreen,monospace] text-xs text-[#333355] uppercase tracking-wider">
+                    No evidence available
+                  </p>
                 </div>
               )}
             </div>
@@ -220,14 +215,16 @@ export function EvidenceDrawer({ scanId, escoUri, onClose }: EvidenceDrawerProps
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-2">
               <div className="text-3xl">😕</div>
-              <p className="text-slate-500 text-sm">Skill details not found</p>
+              <p className="font-[Silkscreen,monospace] text-xs text-[#333355] uppercase tracking-wider">
+                Skill not found
+              </p>
             </div>
           </div>
         )}
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="p-4 border-t-2 border-[#333355] bg-[#12122a]">
           <Button variant="secondary" onClick={onClose} className="w-full">
-            Close
+            ✕ Close
           </Button>
         </div>
       </div>

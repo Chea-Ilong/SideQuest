@@ -3,6 +3,7 @@ import { requireShareToken } from '../middleware/shareToken.js';
 import {
   getSkillsView,
   getEvidenceView,
+  getSkillEvidenceView,
   getMapView,
   getClustersView,
   getGapsView,
@@ -27,6 +28,7 @@ router.get('/target-roles', async (_req, res, next) => {
 // Protected: per-scan views
 router.get('/:id/views/skills', requireShareToken, getSkillsView);
 router.get('/:id/views/evidence', requireShareToken, getEvidenceView);
+router.get('/:id/views/evidence/:escoUri(*)', requireShareToken, getSkillEvidenceView);
 router.get('/:id/views/map', requireShareToken, getMapView);
 router.get('/:id/views/clusters', requireShareToken, getClustersView);
 router.get('/:id/views/gaps', requireShareToken, getGapsView);

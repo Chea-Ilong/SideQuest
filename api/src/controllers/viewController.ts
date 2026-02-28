@@ -98,6 +98,119 @@ export async function getEvidenceView(req: Request, res: Response, next: NextFun
   }
 }
 
+/**
+ * GET /api/scans/:id/views/evidence/:escoUri
+ * Returns evidence items for a specific ESCO skill URI.
+ * More efficient than fetching all skills and filtering client-side.
+ */
+export async function getSkillEvidenceView(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const scanId = req.params['id']!;
+    const escoUri = decodeURIComponent(req.params['escoUri']!);
+
+    // Get the skill score record
+    const { data: scoreData } = await supabase
+      .schema('app')
+      .from('user_skill_scores')
+      .select('score, evidence_count, top_evidence_ids, recency_days')
+      .eq('scan_id', scanId)
+      .eq('esco_uri', escoUri)
+      .single();
+
+    // Get ESCO skill info
+    const { data: escoSkill } = await supabase
+      .schema('ref')
+      .from('esco_skills')
+      .select('esco_uri, preferred_label, skill_type, description')
+      .eq('esco_uri', escoUri)
+      .single();
+
+    // Get normalization info
+    const { data: normData } = await supabase
+      .schema('app')
+      .from('skill_normalizations')
+      .select('method, score, mention_id')
+      .eq('esco_uri', escoUri)
+      .eq('is_primary', true)
+      .limit(1)
+      .single();
+
+    if (!scoreData || !escoSkill) {
+      res.json({ data: null });
+      return;
+    }
+
+    // Get evidence items via: skill_normalizations → skill_mentions → evidence_items
+    // Step 1: Get mention IDs for this esco_uri
+    const { data: normalizations } = await supabase
+      .schema('app')
+      .from('skill_normalizations')
+      .select('mention_id')
+      .eq('esco_uri', escoUri)
+      .eq('is_primary', true);
+
+    const mentionIds = (normalizations ?? []).map((n) => n.mention_id);
+
+    let evidenceItems: Array<{
+      id: string;
+      evidence_type: string;
+      text_snippet: string | null;
+      strength: number;
+      timestamp: string | null;
+      ref: Record<string, unknown>;
+    }> = [];
+
+    if (mentionIds.length > 0) {
+      // Step 2: Get evidence IDs from mentions
+      const { data: mentions } = await supabase
+        .schema('app')
+        .from('skill_mentions')
+        .select('evidence_id, mention_text')
+        .in('id', mentionIds);
+
+      const evidenceIds = [...new Set((mentions ?? []).map((m) => m.evidence_id))];
+
+      if (evidenceIds.length > 0) {
+        // Step 3: Get evidence items
+        const { data: evidence } = await supabase
+          .schema('app')
+          .from('evidence_items')
+          .select('id, evidence_type, text_snippet, strength, timestamp, ref')
+          .in('id', evidenceIds)
+          .eq('scan_id', scanId)
+          .order('strength', { ascending: false })
+          .limit(20);
+
+        evidenceItems = evidence ?? [];
+      }
+    }
+
+    const skillView = {
+      esco_uri: escoUri,
+      preferred_label: escoSkill.preferred_label,
+      skill_type: escoSkill.skill_type,
+      description: escoSkill.description,
+      score: scoreData.score,
+      evidence_count: scoreData.evidence_count,
+      recency_days: scoreData.recency_days,
+      normalization_method: (normData?.method ?? 'exact') as 'exact' | 'trigram' | 'embedding' | 'manual_override',
+      normalization_confidence: normData?.score ?? 1,
+      evidence: evidenceItems.map((ev) => ({
+        id: ev.id,
+        evidence_type: ev.evidence_type,
+        text_snippet: ev.text_snippet,
+        strength: ev.strength,
+        timestamp: ev.timestamp,
+        ref: ev.ref,
+      })),
+    };
+
+    res.json({ data: skillView });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getMapView(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const scanId = req.params['id']!;

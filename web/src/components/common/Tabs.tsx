@@ -18,25 +18,25 @@ interface TabsProps {
 export function Tabs({ tabs, activeTab, onChange, className = '', variant = 'underline' }: TabsProps) {
   if (variant === 'pills') {
     return (
-      <div className={`flex gap-1 p-1 bg-slate-100 rounded-xl ${className}`}>
+      <div className={`flex gap-1 p-1 bg-[#0a0a1a] border-2 border-[#333355] ${className}`}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
-              flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150
+              flex items-center gap-1.5 px-3 py-1.5 text-xs font-[Silkscreen,monospace] uppercase tracking-wider transition-all duration-75
               ${
                 activeTab === tab.id
-                  ? 'bg-white text-indigo-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-[#4a3f8f] text-[#00d4ff] border-2 border-[#00d4ff] shadow-[2px_2px_0_#000000]'
+                  : 'bg-transparent text-[#888888] border-2 border-transparent hover:text-[#c8c8c8] hover:border-[#333355]'
               }
             `}
           >
             {tab.icon}
             {tab.label}
             {tab.badge !== undefined && tab.badge > 0 && (
-              <span className={`ml-0.5 px-1.5 py-0.5 text-xs rounded-full ${activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'}`}>
-                {tab.badge}
+              <span className={`ml-0.5 px-1 text-xs ${activeTab === tab.id ? 'text-[#ffd700]' : 'text-[#555577]'}`}>
+                [{tab.badge}]
               </span>
             )}
           </button>
@@ -46,26 +46,26 @@ export function Tabs({ tabs, activeTab, onChange, className = '', variant = 'und
   }
 
   return (
-    <div className={`border-b border-slate-200 ${className}`}>
-      <nav className="flex gap-0 -mb-px overflow-x-auto">
+    <div className={`border-b-2 border-[#333355] ${className}`}>
+      <nav className="flex gap-0 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}
             className={`
-              flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-all duration-150 whitespace-nowrap
+              flex items-center gap-1.5 px-4 py-2.5 text-xs font-[Silkscreen,monospace] uppercase tracking-wider transition-all duration-75 whitespace-nowrap border-b-2 -mb-0.5
               ${
                 activeTab === tab.id
-                  ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                  ? 'border-[#00d4ff] text-[#00d4ff] bg-[#0a1a2a]'
+                  : 'border-transparent text-[#555577] hover:text-[#888888] hover:border-[#333355] hover:bg-[#0a0a1a]'
               }
             `}
           >
             {tab.icon}
             {tab.label}
             {tab.badge !== undefined && tab.badge > 0 && (
-              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${activeTab === tab.id ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
-                {tab.badge}
+              <span className={`ml-1 text-xs ${activeTab === tab.id ? 'text-[#ffd700]' : 'text-[#333355]'}`}>
+                [{tab.badge}]
               </span>
             )}
           </button>

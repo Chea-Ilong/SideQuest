@@ -20,6 +20,7 @@ export interface ScanProgress {
   percent?: number;
   steps_completed?: string[];
   errors?: string[];
+  message?: string | null;
 }
 
 export interface SkillView {

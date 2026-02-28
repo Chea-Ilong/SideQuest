@@ -4,6 +4,33 @@ import { getSkillsForDep } from '../utils/depSkillMap.js';
 import { logger } from '../utils/logger.js';
 import type { EvidenceType } from '../types/index.js';
 
+/**
+ * Retry a function with exponential backoff.
+ * Retries on any error except 404 (not found) and 403 (forbidden/rate limit exceeded).
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 2,
+  baseDelayMs = 500
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      // Don't retry on 404 (resource doesn't exist) or 403 (auth/rate limit)
+      const status = (err as any)?.status ?? (err as any)?.response?.status;
+      if (status === 404 || status === 403) throw err;
+      if (attempt < maxRetries) {
+        const delay = baseDelayMs * Math.pow(2, attempt);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 // GitHub language → skill name mapping
 const LANGUAGE_SKILL_MAP: Record<string, string[]> = {
   JavaScript: ['JavaScript'],
@@ -152,11 +179,10 @@ export async function ingestGitHub(
     for (const repo of ownRepos) {
       const owner = repo.full_name.split('/')[0]!;
 
-      // Languages
+      // Languages (with retry)
       try {
-        const languages = await githubGet<Record<string, number>>(
-          `/repos/${owner}/${repo.name}/languages`,
-          token
+        const languages = await withRetry(() =>
+          githubGet<Record<string, number>>(`/repos/${owner}/${repo.name}/languages`, token)
         );
         for (const [lang, bytes] of Object.entries(languages)) {
           const strength = Math.min(1, Math.log10(bytes + 1) / 7);
@@ -171,14 +197,13 @@ export async function ingestGitHub(
           });
         }
       } catch (err) {
-        logger.warn({ err, repo: repo.name }, 'Failed to fetch languages');
+        logger.warn({ err, repo: repo.name }, 'Failed to fetch languages after retries');
       }
 
-      // Topics
+      // Topics (with retry)
       try {
-        const topicData = await githubGet<{ names: string[] }>(
-          `/repos/${owner}/${repo.name}/topics`,
-          token
+        const topicData = await withRetry(() =>
+          githubGet<{ names: string[] }>(`/repos/${owner}/${repo.name}/topics`, token)
         );
         for (const topic of topicData.names ?? []) {
           evidenceItems.push({
@@ -192,12 +217,12 @@ export async function ingestGitHub(
           });
         }
       } catch (err) {
-        logger.warn({ err, repo: repo.name }, 'Failed to fetch topics');
+        logger.warn({ err, repo: repo.name }, 'Failed to fetch topics after retries');
       }
 
-      // Dependencies
+      // Dependencies (with retry)
       try {
-        const deps = await fetchDependencies(owner, repo.name, token);
+        const deps = await withRetry(() => fetchDependencies(owner, repo.name, token));
         for (const dep of deps) {
           const skills = getSkillsForDep(dep.name);
           if (skills.length > 0 || dep.name) {
@@ -213,14 +238,13 @@ export async function ingestGitHub(
           }
         }
       } catch (err) {
-        logger.warn({ err, repo: repo.name }, 'Failed to fetch dependencies');
+        logger.warn({ err, repo: repo.name }, 'Failed to fetch dependencies after retries');
       }
 
-      // README snippet (first 500 chars)
+      // README snippet (first 500 chars, with retry)
       try {
-        const readmeData = await githubGet<{ content: string; encoding: string }>(
-          `/repos/${owner}/${repo.name}/readme`,
-          token
+        const readmeData = await withRetry(() =>
+          githubGet<{ content: string; encoding: string }>(`/repos/${owner}/${repo.name}/readme`, token)
         );
         const readmeText =
           readmeData.encoding === 'base64'

@@ -1,6 +1,6 @@
 import React from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'gradient';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'gradient' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,17 +12,18 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white shadow-sm hover:shadow-md',
-  secondary: 'bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300',
-  ghost: 'bg-transparent hover:bg-slate-100 active:bg-slate-200 text-slate-700',
-  danger: 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white shadow-sm hover:shadow-md',
-  gradient: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white shadow-md hover:shadow-lg',
+  primary: 'bg-[#4a3f8f] text-[#f0f0f0] border-[#7b6fcf] hover:bg-[#5a4f9f] active:translate-y-[2px] active:shadow-none',
+  secondary: 'bg-[#1a1a2e] text-[#c8c8c8] border-[#4a3f8f] hover:bg-[#22223e] hover:text-[#f0f0f0] active:translate-y-[2px] active:shadow-none',
+  ghost: 'bg-transparent text-[#888888] border-[#333355] hover:bg-[#1a1a2e] hover:text-[#c8c8c8] active:translate-y-[2px] active:shadow-none',
+  danger: 'bg-[#aa0022] text-[#f0f0f0] border-[#ff2244] hover:bg-[#cc0033] active:translate-y-[2px] active:shadow-none',
+  gradient: 'bg-[#4a3f8f] text-[#00d4ff] border-[#00d4ff] hover:bg-[#5a4f9f] hover:text-[#ffffff] active:translate-y-[2px] active:shadow-none',
+  success: 'bg-[#006633] text-[#00ff88] border-[#00ff88] hover:bg-[#008844] active:translate-y-[2px] active:shadow-none',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-sm gap-1.5',
-  md: 'px-4 py-2 text-sm gap-2',
-  lg: 'px-6 py-3 text-base gap-2',
+  sm: 'px-3 py-1.5 text-xs gap-1.5',
+  md: 'px-4 py-2 text-xs gap-2',
+  lg: 'px-6 py-3 text-sm gap-2',
 };
 
 export function Button({
@@ -40,9 +41,11 @@ export function Button({
       disabled={disabled || loading}
       className={`
         inline-flex items-center justify-center
-        font-medium rounded-xl transition-all duration-150
-        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-        disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
+        font-[Silkscreen,monospace] uppercase tracking-wider
+        border-2 transition-all duration-75
+        shadow-[2px_2px_0_#000000]
+        focus:outline-none focus:ring-2 focus:ring-[#00d4ff] focus:ring-offset-2 focus:ring-offset-[#0a0a1a]
+        disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${className}
@@ -50,10 +53,7 @@ export function Button({
       {...props}
     >
       {loading ? (
-        <svg className="animate-spin h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <span className="pixel-spin inline-block w-3 h-3 border-2 border-current border-t-transparent flex-shrink-0" />
       ) : icon ? (
         <span className="flex-shrink-0">{icon}</span>
       ) : null}

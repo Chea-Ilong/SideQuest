@@ -12,34 +12,34 @@ interface BadgeProps {
 }
 
 const variantClasses: Record<BadgeVariant, string> = {
-  default: 'bg-slate-100 text-slate-700 border border-slate-200',
-  success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  warning: 'bg-amber-50 text-amber-700 border border-amber-200',
-  error: 'bg-red-50 text-red-700 border border-red-200',
-  info: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
-  purple: 'bg-violet-50 text-violet-700 border border-violet-200',
+  default: 'bg-[#1a1a2e] text-[#888888] border-[#333355]',
+  success: 'bg-[#003322] text-[#00ff88] border-[#00aa55]',
+  warning: 'bg-[#332200] text-[#ffd700] border-[#aa7700]',
+  error: 'bg-[#330011] text-[#ff2244] border-[#aa0022]',
+  info: 'bg-[#0a1a2a] text-[#00d4ff] border-[#0088aa]',
+  purple: 'bg-[#1a0a2a] text-[#bf7fff] border-[#7b2d8b]',
 };
 
 const dotColors: Record<BadgeVariant, string> = {
-  default: 'bg-slate-400',
-  success: 'bg-emerald-500',
-  warning: 'bg-amber-500',
-  error: 'bg-red-500',
-  info: 'bg-indigo-500',
-  purple: 'bg-violet-500',
+  default: 'bg-[#888888]',
+  success: 'bg-[#00ff88]',
+  warning: 'bg-[#ffd700]',
+  error: 'bg-[#ff2244]',
+  info: 'bg-[#00d4ff]',
+  purple: 'bg-[#bf7fff]',
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
   sm: 'px-1.5 py-0.5 text-xs',
-  md: 'px-2.5 py-1 text-xs',
+  md: 'px-2 py-1 text-xs',
 };
 
 export function Badge({ children, variant = 'default', className = '', size = 'sm', dot = false }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-medium ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+      className={`inline-flex items-center gap-1.5 border font-[Silkscreen,monospace] uppercase tracking-wider shadow-[1px_1px_0_#000000] ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
     >
-      {dot && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[variant]}`} />}
+      {dot && <span className={`w-1.5 h-1.5 flex-shrink-0 ${dotColors[variant]}`} />}
       {children}
     </span>
   );

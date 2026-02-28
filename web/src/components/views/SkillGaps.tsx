@@ -16,12 +16,10 @@ export function SkillGaps({ scanId, onSkillClick }: SkillGapsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load roles on mount
   useEffect(() => {
     api.views.targetRoles().then((r) => setRoles(r.data)).catch(() => {});
   }, []);
 
-  // Load gaps when role changes
   useEffect(() => {
     setLoading(true);
     api.views.gaps(scanId, selectedRole)
@@ -30,10 +28,10 @@ export function SkillGaps({ scanId, onSkillClick }: SkillGapsProps) {
       .finally(() => setLoading(false));
   }, [scanId, selectedRole]);
 
-  function gapConfig(score: number): { label: string; variant: 'error' | 'warning' | 'info'; barColor: string; bgColor: string } {
-    if (score > 0.6) return { label: 'Critical', variant: 'error', barColor: '#ef4444', bgColor: 'bg-red-50' };
-    if (score > 0.3) return { label: 'Moderate', variant: 'warning', barColor: '#f59e0b', bgColor: 'bg-amber-50' };
-    return { label: 'Minor', variant: 'info', barColor: '#6366f1', bgColor: 'bg-indigo-50' };
+  function gapConfig(score: number): { label: string; variant: 'error' | 'warning' | 'info'; barColor: string } {
+    if (score > 0.6) return { label: 'Critical', variant: 'error', barColor: '#ff2244' };
+    if (score > 0.3) return { label: 'Moderate', variant: 'warning', barColor: '#ffd700' };
+    return { label: 'Minor', variant: 'info', barColor: '#00d4ff' };
   }
 
   const criticalCount = gaps.filter(g => g.gap_score > 0.6).length;
@@ -44,45 +42,48 @@ export function SkillGaps({ scanId, onSkillClick }: SkillGapsProps) {
     <div className="space-y-5">
       {/* Role selector */}
       <div className="flex items-center gap-3 flex-wrap">
-        <label className="text-sm font-semibold text-slate-700 whitespace-nowrap">Target Role:</label>
+        <label className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#888888] whitespace-nowrap">
+          Target Role:
+        </label>
         <div className="relative flex-1 min-w-48">
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full appearance-none pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400 bg-white shadow-sm font-medium text-slate-700 cursor-pointer"
+            className="w-full appearance-none pl-3 pr-8 py-2 font-[Silkscreen,monospace] text-xs uppercase tracking-wider bg-[#0a0a1a] text-[#c8c8c8] border-2 border-[#4a3f8f] shadow-[2px_2px_0_#000000] focus:outline-none focus:border-[#00d4ff] cursor-pointer"
           >
             {roles.map((r) => (
               <option key={r.id} value={r.id}>{r.name}</option>
             ))}
             {roles.length === 0 && <option value="fullstack-eng">Fullstack Engineer</option>}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none font-[Silkscreen,monospace] text-xs text-[#555577]">
+            ▼
           </div>
         </div>
       </div>
 
       {loading && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <Spinner size="lg" />
-          <p className="text-sm text-slate-400">Analyzing skill gaps...</p>
+          <Spinner size="lg" color="#ffd700" />
+          <p className="font-[Silkscreen,monospace] text-xs text-[#555577] uppercase tracking-wider">Analyzing gaps...</p>
         </div>
       )}
 
       {error && (
         <div className="text-center py-8">
-          <p className="text-red-500 text-sm">{error}</p>
+          <p className="font-[Silkscreen,monospace] text-xs text-[#ff2244]">▶ {error}</p>
         </div>
       )}
 
       {!loading && gaps.length === 0 && (
         <div className="text-center py-16 space-y-3">
           <div className="text-5xl">🎉</div>
-          <p className="text-slate-700 font-semibold">Great match!</p>
-          <p className="text-sm text-slate-500">
-            No significant skill gaps found for this role. Your profile matches the requirements well!
+          <p className="font-[Silkscreen,monospace] text-sm text-[#00ff88] uppercase tracking-wider">Great match!</p>
+          <p className="font-[Silkscreen,monospace] text-xs text-[#555577]">
+            No significant skill gaps found for this role.
+          </p>
+          <p className="font-[Silkscreen,monospace] text-xs text-[#333355]">
+            Make sure ESCO data is imported and analysis has run.
           </p>
         </div>
       )}
@@ -91,74 +92,71 @@ export function SkillGaps({ scanId, onSkillClick }: SkillGapsProps) {
         <div className="space-y-5">
           {/* Summary stats */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-red-600">{criticalCount}</div>
-              <div className="text-xs text-red-500 font-medium mt-0.5">Critical</div>
+            <div className="bg-[#330011] border-2 border-[#aa0022] shadow-[2px_2px_0_#000000] p-3 text-center">
+              <div className="font-[Press_Start_2P,monospace] text-xl text-[#ff2244]">{criticalCount}</div>
+              <div className="font-[Silkscreen,monospace] text-xs text-[#aa0022] uppercase tracking-wider mt-1">Critical</div>
             </div>
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-amber-600">{moderateCount}</div>
-              <div className="text-xs text-amber-500 font-medium mt-0.5">Moderate</div>
+            <div className="bg-[#332200] border-2 border-[#aa7700] shadow-[2px_2px_0_#000000] p-3 text-center">
+              <div className="font-[Press_Start_2P,monospace] text-xl text-[#ffd700]">{moderateCount}</div>
+              <div className="font-[Silkscreen,monospace] text-xs text-[#aa7700] uppercase tracking-wider mt-1">Moderate</div>
             </div>
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-center">
-              <div className="text-2xl font-bold text-indigo-600">{minorCount}</div>
-              <div className="text-xs text-indigo-500 font-medium mt-0.5">Minor</div>
+            <div className="bg-[#0a1a2a] border-2 border-[#0088aa] shadow-[2px_2px_0_#000000] p-3 text-center">
+              <div className="font-[Press_Start_2P,monospace] text-xl text-[#00d4ff]">{minorCount}</div>
+              <div className="font-[Silkscreen,monospace] text-xs text-[#0088aa] uppercase tracking-wider mt-1">Minor</div>
             </div>
           </div>
 
-          <p className="text-sm text-slate-500">
-            <span className="font-semibold text-slate-700">{gaps.length}</span> skill gap{gaps.length !== 1 ? 's' : ''} identified for{' '}
-            <span className="font-semibold text-slate-700">{roles.find((r) => r.id === selectedRole)?.name ?? selectedRole}</span>
+          <p className="font-[Silkscreen,monospace] text-xs text-[#555577]">
+            <span className="text-[#c8c8c8]">{gaps.length}</span> gap{gaps.length !== 1 ? 's' : ''} for{' '}
+            <span className="text-[#00d4ff]">{roles.find((r) => r.id === selectedRole)?.name ?? selectedRole}</span>
           </p>
 
           <div className="space-y-3">
             {gaps.map((gap) => {
-              const { label, variant, barColor, bgColor } = gapConfig(gap.gap_score);
+              const { label, variant, barColor } = gapConfig(gap.gap_score);
               return (
                 <button
                   key={gap.esco_uri}
                   onClick={() => onSkillClick(gap.esco_uri)}
-                  className="w-full text-left border border-slate-200 rounded-2xl p-4 hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 bg-white group"
+                  className="w-full text-left bg-[#12122a] border-2 border-[#333355] shadow-[2px_2px_0_#000000] p-4 hover:border-[#4a3f8f] transition-all duration-75 group"
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                        <span className="font-[Silkscreen,monospace] text-xs text-[#c8c8c8] group-hover:text-[#f0f0f0] uppercase tracking-wider">
                           {gap.preferred_label}
                         </span>
                         <Badge variant={variant} dot>{label}</Badge>
                       </div>
                       {gap.rationale && (
-                        <p className="text-sm text-slate-500 mt-1 leading-relaxed">{gap.rationale}</p>
+                        <p className="font-[Silkscreen,monospace] text-xs text-[#555577] mt-1 leading-relaxed">{gap.rationale}</p>
                       )}
                     </div>
-                    <svg className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 flex-shrink-0 mt-1 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
                   </div>
 
-                  {/* Comparison bars */}
+                  {/* RPG stat comparison bars */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-400 w-12 text-right flex-shrink-0">You</span>
-                      <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <span className="font-[Silkscreen,monospace] text-xs text-[#555577] w-10 text-right flex-shrink-0">YOU</span>
+                      <div className="flex-1 h-3 bg-[#0a0a1a] border border-[#333355]">
                         <div
-                          className="h-2 rounded-full bg-indigo-500 transition-all duration-500"
+                          className="h-full bg-[#4a3f8f]"
                           style={{ width: `${Math.round(gap.user_score * 100)}%` }}
                         />
                       </div>
-                      <span className="text-xs font-semibold text-slate-600 w-8 flex-shrink-0">
+                      <span className="font-[Silkscreen,monospace] text-xs text-[#888888] w-8 flex-shrink-0">
                         {Math.round(gap.user_score * 100)}%
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-400 w-12 text-right flex-shrink-0">Target</span>
-                      <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <span className="font-[Silkscreen,monospace] text-xs text-[#555577] w-10 text-right flex-shrink-0">REQ</span>
+                      <div className="flex-1 h-3 bg-[#0a0a1a] border border-[#333355]">
                         <div
-                          className="h-2 rounded-full transition-all duration-500"
+                          className="h-full"
                           style={{ width: `${Math.round(gap.target_weight * 100)}%`, backgroundColor: barColor }}
                         />
                       </div>
-                      <span className="text-xs font-semibold text-slate-600 w-8 flex-shrink-0">
+                      <span className="font-[Silkscreen,monospace] text-xs text-[#888888] w-8 flex-shrink-0">
                         {Math.round(gap.target_weight * 100)}%
                       </span>
                     </div>

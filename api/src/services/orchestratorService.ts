@@ -24,14 +24,15 @@ async function updateProgress(
   phase: Phase,
   percent: number,
   stepsCompleted: string[],
-  errors: string[] = []
+  errors: string[] = [],
+  message?: string
 ): Promise<void> {
   await supabase
     .schema('app')
     .from('scans')
     .update({
       updated_at: new Date().toISOString(),
-      progress: { phase, percent, steps_completed: stepsCompleted, errors },
+      progress: { phase, percent, steps_completed: stepsCompleted, errors, message: message ?? null },
     })
     .eq('id', scanId);
 }
@@ -65,22 +66,22 @@ export async function runAnalysis(scanId: string): Promise<void> {
     }
 
     stepsCompleted.push('sources_ingested');
-    await updateProgress(scanId, 'extracting_mentions', 15, stepsCompleted);
+    await updateProgress(scanId, 'extracting_mentions', 15, stepsCompleted, [], 'Scanning sources for skill mentions...');
 
     // Step 1: Extract skill mentions
     const mentionCount = await extractSkillMentions(scanId);
     stepsCompleted.push(`mention_extraction:${mentionCount}`);
-    await updateProgress(scanId, 'normalizing', 30, stepsCompleted);
+    await updateProgress(scanId, 'normalizing', 30, stepsCompleted, [], `Normalizing ${mentionCount} skill mentions to ESCO taxonomy...`);
 
     // Step 2: Normalize mentions to ESCO
     const normalizedCount = await normalizeSkillMentions(scanId);
     stepsCompleted.push(`normalization:${normalizedCount}`);
-    await updateProgress(scanId, 'scoring', 50, stepsCompleted);
+    await updateProgress(scanId, 'scoring', 50, stepsCompleted, [], `Computing scores for ${normalizedCount} normalized skills...`);
 
     // Step 3: Compute skill scores
     const skillCount = await computeSkillScores(scanId);
     stepsCompleted.push(`scoring:${skillCount}`);
-    await updateProgress(scanId, 'clustering', 65, stepsCompleted);
+    await updateProgress(scanId, 'clustering', 65, stepsCompleted, [], `Clustering ${skillCount} skills into groups...`);
 
     // Step 4: Compute clusters + coordinates
     await computeClusters(scanId).catch((err) => {

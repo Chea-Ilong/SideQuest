@@ -11,18 +11,19 @@ interface CareerTimelineProps {
   onSkillClick: (escoUri: string) => void;
 }
 
-const COLORS = ['#6366f1', '#06b6d4', '#f59e0b', '#10b981', '#ef4444'];
+// 8-bit color palette
+const COLORS = ['#00d4ff', '#ffd700', '#00ff88', '#ff2244', '#bf7fff'];
 
-function CustomTooltip({ active, payload, label }: any) {
+function PixelTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm">
-      <p className="font-semibold text-slate-700 mb-2">{label}</p>
+    <div className="bg-[#0a0a1a] border-2 border-[#4a3f8f] shadow-[4px_4px_0_#000000] p-3">
+      <p className="font-[Silkscreen,monospace] text-xs text-[#888888] uppercase tracking-wider mb-2">{label}</p>
       {payload.map((entry: any) => (
         <div key={entry.name} className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.fill }} />
-          <span className="text-slate-600">{entry.name}:</span>
-          <span className="font-semibold text-slate-800">{entry.value}%</span>
+          <div className="w-2 h-2 flex-shrink-0" style={{ backgroundColor: entry.fill }} />
+          <span className="font-[Silkscreen,monospace] text-xs text-[#c8c8c8]">{entry.name}:</span>
+          <span className="font-[Silkscreen,monospace] text-xs" style={{ color: entry.fill }}>{entry.value}%</span>
         </div>
       ))}
     </div>
@@ -44,8 +45,8 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <Spinner size="lg" />
-        <p className="text-sm text-slate-400">Building your career timeline...</p>
+        <Spinner size="lg" color="#00d4ff" />
+        <p className="font-[Silkscreen,monospace] text-xs text-[#555577] uppercase tracking-wider">Building timeline...</p>
       </div>
     );
   }
@@ -53,7 +54,7 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500 text-sm">{error}</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#ff2244]">▶ {error}</p>
       </div>
     );
   }
@@ -62,13 +63,13 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
     return (
       <div className="text-center py-16 space-y-3">
         <div className="text-4xl">📅</div>
-        <p className="text-slate-700 font-semibold">No timeline data available.</p>
-        <p className="text-sm text-slate-400">Timeline requires timestamped evidence (GitHub commits, resume dates).</p>
+        <p className="font-[Silkscreen,monospace] text-sm text-[#888888] uppercase tracking-wider">No timeline data</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#555577]">Timeline requires timestamped evidence.</p>
+        <p className="font-[Silkscreen,monospace] text-xs text-[#333355]">(GitHub commits, resume dates)</p>
       </div>
     );
   }
 
-  // Build chart data
   const allSkills = [...new Set(points.flatMap((p) => p.top_skills.map((s) => s.preferred_label)))].slice(0, 5);
 
   const chartData = points.map((p) => {
@@ -84,30 +85,41 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
 
   return (
     <div className="space-y-6">
-      {/* Chart section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
+      {/* Chart */}
+      <div className="bg-[#0a0a1a] border-2 border-[#333355] shadow-[4px_4px_0_#000000] p-4">
         <div className="mb-4">
-          <h3 className="font-semibold text-slate-900">Skill Evolution Over Time</h3>
-          <p className="text-sm text-slate-500 mt-0.5">Your top skills across time periods based on evidence timestamps.</p>
+          <h3 className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#888888]">
+            Skill Evolution Over Time
+          </h3>
         </div>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} unit="%" axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#1a1a2e" />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 9, fill: '#555577', fontFamily: 'Silkscreen, monospace' }}
+                axisLine={{ stroke: '#333355' }}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 9, fill: '#555577', fontFamily: 'Silkscreen, monospace' }}
+                unit="%"
+                axisLine={{ stroke: '#333355' }}
+                tickLine={false}
+              />
+              <Tooltip content={<PixelTooltip />} />
               <Legend
-                wrapperStyle={{ fontSize: '12px', paddingTop: '12px' }}
-                formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>}
+                wrapperStyle={{ fontSize: '10px', fontFamily: 'Silkscreen, monospace', paddingTop: '12px' }}
+                formatter={(value) => <span style={{ color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{value}</span>}
               />
               {allSkills.map((skill, i) => (
                 <Bar
                   key={skill}
                   dataKey={skill}
                   fill={COLORS[i % COLORS.length]}
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={40}
+                  radius={[0, 0, 0, 0]}
+                  maxBarSize={32}
                 />
               ))}
             </BarChart>
@@ -117,23 +129,23 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
 
       {/* Period breakdown */}
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-slate-700">Period Details</h4>
+        <h4 className="font-[Silkscreen,monospace] text-xs uppercase tracking-wider text-[#555577]">Period Details</h4>
         {points.map((point, index) => (
           <div
             key={`${point.period_start}-${point.period_end}`}
-            className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-sm transition-shadow"
+            className="bg-[#12122a] border-2 border-[#333355] shadow-[2px_2px_0_#000000] overflow-hidden"
           >
             {/* Period header */}
-            <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-100">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-[#0a0a1a] border-b-2 border-[#333355]">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">
+                <div className="w-7 h-7 bg-[#4a3f8f] border-2 border-[#7b6fcf] flex items-center justify-center font-[Press_Start_2P,monospace] text-xs text-[#00d4ff]">
                   {index + 1}
                 </div>
-                <span className="font-semibold text-slate-800 text-sm">
+                <span className="font-[Silkscreen,monospace] text-xs text-[#c8c8c8] uppercase tracking-wider">
                   {point.period_start.slice(0, 7)} — {point.period_end.slice(0, 7)}
                 </span>
               </div>
-              <span className="text-xs text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">
+              <span className="font-[Silkscreen,monospace] text-xs text-[#555577] bg-[#0a0a1a] border border-[#333355] px-2 py-0.5">
                 {point.top_skills.length} skills
               </span>
             </div>
@@ -145,10 +157,10 @@ export function CareerTimeline({ scanId, onSkillClick }: CareerTimelineProps) {
                   <button
                     key={skill.esco_uri}
                     onClick={() => onSkillClick(skill.esco_uri)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 hover:border-indigo-200 text-indigo-700 rounded-xl text-xs font-medium transition-all duration-150 group"
+                    className="flex items-center gap-1.5 px-2 py-1 bg-[#0a1a2a] border-2 border-[#0088aa] hover:border-[#00d4ff] hover:bg-[#0a2a3a] font-[Silkscreen,monospace] text-xs text-[#00d4ff] transition-all duration-75 shadow-[1px_1px_0_#000000]"
                   >
                     <span>{skill.preferred_label}</span>
-                    <span className="text-indigo-400 font-semibold">{Math.round(skill.score * 100)}%</span>
+                    <span className="text-[#555577]">{Math.round(skill.score * 100)}%</span>
                   </button>
                 ))}
               </div>
